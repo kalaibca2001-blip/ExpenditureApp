@@ -15,6 +15,7 @@ struct Page2View: View {
     
     @State private var expense = ""
     @State private var amount = ""
+
     
     var body: some View {
         
@@ -34,6 +35,7 @@ struct Page2View: View {
                         expense = ""
                         amount = ""
                         selectedDate = Date()
+                        
                         store.expenses.removeAll()
                     }
                     .foregroundColor(.blue)
@@ -75,6 +77,8 @@ struct Page2View: View {
                     )
                     .font(.body)
                 
+             
+                
                 // Amount and amount textfield
                 Text("Amount")
                     .font(.headline)
@@ -88,7 +92,8 @@ struct Page2View: View {
                     )
                     .font(.body)
                     .keyboardType(.decimalPad)
-                // Update Button to update in home view or to move homeview 
+                
+                // Update Button to update in home view or to move homeview
                 HStack {
                     
                     Spacer()
@@ -98,13 +103,18 @@ struct Page2View: View {
                         if !expense.isEmpty && !amount.isEmpty {
                             
                             let newExpense = Expense(
-                                name: expense,
-                                amount: amount
+                                expenseDate: selectedDate,
+                                expenseAmount: Double(amount) ?? 0.0,
+                                expenseTitle:expense,
+                                expenseNo:UUID(),
                             )
                             
                             store.expenses.append(newExpense)
                             expense = ""
                             amount = ""
+                            CoreDataManager.shared.saveExpense(expense: newExpense)
+                            
+                            
                         }
                         
                     } label: {
@@ -118,9 +128,10 @@ struct Page2View: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(Color.blue, lineWidth: 2)
                             )
+                        
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    
+                  
                     
                 }
                 

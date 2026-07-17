@@ -7,6 +7,8 @@
 import Foundation
 
 struct Expense {
-    var name: String
-    var amount: String
+    var expenseDate: Date
+    var expenseAmount: Double
+    var expenseTitle:String
+    var expenseNo:UUID
 }
