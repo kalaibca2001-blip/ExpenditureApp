@@ -4,10 +4,14 @@
 //
 //  Created by VC on 04/07/26.
 //
+
+
+
+
 import SwiftUI
 
 struct Page2View: View {
-    @ObservedObject var store: ExpenseStore
+    
     
     @State private var selectedDate = Date()
     @State private var showDatePicker = false
@@ -15,172 +19,172 @@ struct Page2View: View {
     
     @State private var expense = ""
     @State private var amount = ""
-
+    @Environment(\.dismiss) private var dismiss
+    var editingExpense: Expenses? = nil
     
     var body: some View {
         
-        ScrollView {
+        
+        VStack(alignment: .leading, spacing: 20) {
             
-            VStack(alignment: .leading, spacing: 20) {
+            // Date selection and Clear button
+            HStack {
                 
-                // Date selection and Clear button
-                HStack {
-                    
-                    Text("Date")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Button("Clear") {
-                        expense = ""
-                        amount = ""
-                        selectedDate = Date()
-                        
-                        store.expenses.removeAll()
-                    }
-                    .foregroundColor(.blue)
+                Text("Date")
                     .font(.headline)
-                }
                 
-                // Date Picker Row with calender
-                HStack {
+                Spacer()
+                
+                Button("Clear") {
+                    expense = ""
+                    amount = ""
+                    selectedDate = Date()
                     
-                    Text(selectedDate.formatted(date: .numeric, time: .omitted))
-                        .foregroundColor(.black)
-                    
-                    Spacer()
-                    
-                    Button {
-                        showDatePicker = true
-                    } label: {
-                        Image(systemName: "calendar")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                    }
+                
                 }
+                .foregroundColor(.blue)
+                .font(.headline)
+            }
+            
+            // Date Picker Row with calender
+            HStack {
+                
+                Text(selectedDate.formatted(date: .numeric, time: .omitted))
+                    .foregroundColor(.black)
+                
+                Spacer()
+                
+                Button {
+                    showDatePicker = true
+                } label: {
+                    Image(systemName: "calendar")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding()
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray)
+            )
+            
+            // Expense and expense textfield
+            Text("Expense")
+                .font(.headline)
+            
+            TextField("Enter Expense", text: $expense)
                 .padding()
+                .background(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray)
+                        .stroke(Color.black, lineWidth: 1)
                 )
+                .font(.body)
+            
+            
+            
+            // Amount and amount textfield
+            Text("Amount")
+                .font(.headline)
+            
+            TextField("Enter Amount", text: $amount)
+                .padding()
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.black, lineWidth: 1)
+                )
+                .font(.body)
+                .keyboardType(.decimalPad)
+            
+            // Update Button to update in home view or to move homeview
+            HStack {
                 
-                // Expense and expense textfield
-                Text("Expense")
-                    .font(.headline)
+                Spacer()
                 
-                TextField("Enter Expense", text: $expense)
-                    .padding()
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.black, lineWidth: 1)
-                    )
-                    .font(.body)
-                
-             
-                
-                // Amount and amount textfield
-                Text("Amount")
-                    .font(.headline)
-                
-                TextField("Enter Amount", text: $amount)
-                    .padding()
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.black, lineWidth: 1)
-                    )
-                    .font(.body)
-                    .keyboardType(.decimalPad)
-                
-                // Update Button to update in home view or to move homeview
-                HStack {
+                Button {
                     
-                    Spacer()
-                    
-                    Button {
+                    if !expense.isEmpty && !amount.isEmpty {
                         
-                        if !expense.isEmpty && !amount.isEmpty {
+                        if let editingExpense = editingExpense {
+                            print("UUID from Page2:")
+                               print(editingExpense.expenseNo!)
+                            
+                            CoreDataManager.shared.updateExpense(
+                                expenseNo: editingExpense.expenseNo!,
+                                expenseTitle: expense,
+                                expenseAmount: Double(amount) ?? 0.0,
+                                expenseDate: selectedDate
+                            )
+                            
+                        } else {
                             
                             let newExpense = Expense(
                                 expenseDate: selectedDate,
                                 expenseAmount: Double(amount) ?? 0.0,
-                                expenseTitle:expense,
-                                expenseNo:UUID(),
+                                expenseTitle: expense,
+                                expenseNo: UUID()
                             )
                             
-                            store.expenses.append(newExpense)
-                            expense = ""
-                            amount = ""
                             CoreDataManager.shared.saveExpense(expense: newExpense)
                             
-                            
                         }
                         
-                    } label: {
-                        
-                        
-                        Text("Update")
-                            .font(.headline)
-                            .fontWeight(.medium)
-                            .frame(width: 120, height: 45)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.blue, lineWidth: 2)
-                            )
-                        
+                        expense = ""
+                        amount = ""
+                        dismiss()
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                  
                     
-                }
-                
-//                // Expenses List
-//                Text("Today's Expenses")
-//                    .font(.headline)
-//                    .padding(.top)
-//
-//                ForEach(store.expenses.indices, id: \.self) { index in
-//                    HStack {
-//
-//                        Text(store.expenses[index].name)
-//
-//                        Spacer()
-//
-//                        Text("₹\(store.expenses[index].amount)")
-//                    }
-//                    .padding(.vertical, 5)
-//                }
-                
-//                Spacer()
-            }
-            .padding()
-            
-            .navigationTitle("Add Expense")
-            .sheet(isPresented: $showDatePicker) {
-                
-                NavigationStack {
+                } label: {
                     
-                    VStack {
-                        
-                        DatePicker(
-                            "Select Date",
-                            selection: $selectedDate,
-                            displayedComponents: .date
+                    Text(editingExpense == nil ? "Add" : "Update")
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .frame(width: 120, height: 45)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 2)
                         )
-                        .datePickerStyle(.graphical)
-                        .padding()
-                        
-                        Button("Done") {
-                            showDatePicker = false
-                        }
-                        .padding()
-                    }
-                    .navigationTitle("Choose Date")
-                    .background(Color(red: 0.94, green: 0.90, blue: 0.97))
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
+                
+                
+            }
+            Spacer()
+            
+        }
+       
+        .padding()
+        .navigationTitle("Add Expense")
+        .navigationBarTitleDisplayMode(.inline)
+       
+       
+        .sheet(isPresented: $showDatePicker) {
+            
+            NavigationStack {
+                
+                VStack {
+                    
+                    DatePicker(
+                        "Select Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .padding()
+                    
+                    Button("Done") {
+                        showDatePicker = false
+                    }
+                    .padding()
+                    
+                }
+                .navigationTitle("Choose Date")
+                .background(Color(red: 0.94, green: 0.90, blue: 0.97))
             }
         }
+        
+        
         .background(
             LinearGradient(
                 colors: [
@@ -190,14 +194,49 @@ struct Page2View: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
+            .ignoresSafeArea()
         )
-    }
-}
-    
-    #Preview {
-        NavigationStack {
-            Page2View(store: ExpenseStore())
+        
+       
+        .onAppear {
+
+            if let editingExpense = editingExpense {
+
+                expense = editingExpense.expenseTitle ?? ""
+                amount = String(editingExpense.expenseAmount)
+                selectedDate = editingExpense.expenseDate ?? Date()
+
+            } else {
+
+                expense = ""
+                amount = ""
+                selectedDate = Date()
+
+            }
         }
+       
+//        .onAppear {
+//            
+//            if let expense = editingExpense {
+//                
+//                self.expense = expense.expenseTitle ?? ""
+//                self.amount = "\(expense.expenseAmount)"
+//                self.selectedDate = expense.expenseDate ?? Date()
+//                
+//            }
+//            
+//        }
     }
     
+    
+}
+
+
+#Preview {
+    NavigationStack {
+        Page2View()
+    }
+    
+}
+
 

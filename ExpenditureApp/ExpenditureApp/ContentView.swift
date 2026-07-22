@@ -7,13 +7,11 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ContentView: View {
-   
+
     var body: some View {
         NavigationStack {
-            HomeView(store: ExpenseStore())
+            HomeView()
         }
     }
 }
@@ -21,3 +19,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

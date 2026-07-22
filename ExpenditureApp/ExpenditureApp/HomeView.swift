@@ -4,143 +4,202 @@
 //
 //  Created by VC on 04/07/26.
 //
-import SwiftUI
 
-struct HomeView: View {
-    @ObservedObject var store: ExpenseStore
+    import SwiftUI
     
-    var body: some View {
+    struct HomeView: View {
         
-        VStack {
+        @State private var expenses: [Expenses] = []
+        
+        var body: some View {
+            
+            VStack{
+                
 
-            Text("Manage your expense")
+                
+                if expenses.isEmpty {
+                    
+                    Text("Manage your expense")
+                                       .font(.title2)
+                                       .fontWeight(.semibold)
+                                       .padding(.top,60-20)
+                    Spacer()
+                    
+                    Image("budget")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 350)
+                    
+                    Spacer()
+                    
+                } else {
+                    
+                    Text("Expense Records")
+                        .padding(.top, 50)
+                    VStack(alignment: .leading, spacing: 20) {
+                        
+                        Text("Total Balance")
+                            .font(.title2)
+                            .bold()
+                        
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    colors: [.blue, .blue.opacity(0.45)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(height: 90)
+                            .overlay {
 
-            if store.expenses.isEmpty {
+                                VStack(alignment: .leading, spacing: 10) {
 
-                Image("budget")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 350, height: 550)
-                    .padding(.top, 20)
+                                    Text("Available Balance")
+                                        .foregroundColor(.white.opacity(0.9))
 
-            } else {
+                                    Text("₹\(totalAmount(), specifier: "%.2f")")
+                                        .font(.system(size: 36))
+                                        .bold()
+                                        .foregroundColor(.white)
 
-                Text("Expense Records")
-                    .font(.title2)
-                    .bold()
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                            }
 
-                VStack(spacing: 12) {
+                        Text("Latest spending")
+                            .font(.title2)
+                            .bold()
 
-                    HStack {
+                        ScrollView {
 
-                        Text("S.No")
-                            .frame(width: 40)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(8)
+                            LazyVStack(spacing:15) {
 
-                        Text("Expense")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(8)
+                                ForEach(expenses.indices, id: \.self) { index in
 
-                        Text("Amount")
-                            .frame(width: 80)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(8)
+                                    VStack(alignment: .leading, spacing: 5) {
 
-                        Text("Edit")
-                            .frame(width: 50)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(8)
+                                        HStack {
 
-                        Text("Delete")
-                            .frame(width: 60)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(8)
+                                            Text("#\(index + 1)")
+                                                .font(.headline)
+                                                .foregroundColor(.gray)
+
+                                            Spacer()
+
+                                            Text("₹\(expenses[index].expenseAmount, specifier: "%.2f")")
+                                                .font(.title3)
+                                                .bold()
+                                                .foregroundColor(.green)
+                                        }
+
+                                        Text(expenses[index].expenseTitle ?? "")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+
+                                        Divider()
+
+                                        HStack {
+
+                                            NavigationLink {
+
+                                                Page2View(editingExpense: expenses[index])
+
+                                            } label: {
+
+                                                Label("Edit", systemImage: "square.and.pencil")
+                                                    .foregroundColor(.blue)
+                                            }
+
+                                            Spacer()
+
+                                            Button {
+
+                                                if let expenseNo = expenses[index].expenseNo {
+
+                                                    CoreDataManager.shared.deleteExpense(expenseNo: expenseNo)
+                                                    loadExpenses()
+
+                                                }
+
+                                            } label: {
+
+                                                Label("Delete", systemImage: "trash")
+                                                    .foregroundColor(.red)
+                                            }
+                                        }
+
+                                    }
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(18)
+                                    .shadow(radius: 10)
+                                }
+                            }
+                        }
                     }
-                    .font(.headline)
+                    .padding(.horizontal)
+                    .padding(.top, 30)
                 }
-                ForEach(store.expenses.indices, id: \.self) { index in
-
-                    HStack {
-
-                        Text("\(index + 1)")
-                            .frame(width: 40)
-
-                        Text(store.expenses[index].name)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Text("₹\(store.expenses[index].amount)")
-                            .frame(width: 80)
-
-                        Button {
-
-                        } label: {
-//                            Text("edit")
-                            Image(systemName: "square.and.pencil")
-                                .foregroundColor(.blue)
-                        }
-                        .frame(width: 50)
-
-                        Button {
-
-                        } label: {
-//                            Text("delete")
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                        .frame(width: 60)
-                    }
-
+                   
+                
+                
+                Spacer()
+                
+                NavigationLink {
+                    
+                    Page2View()
+                    
+                } label: {
+                    
+                    Image(systemName: "plus")
+                        .font(.largeTitle)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                        .shadow(radius: 20)
                     
                 }
-                .padding()
-                .background(Color.white.opacity(0.85))
-                .cornerRadius(10)
+                .padding(.bottom)
+                
             }
-
-            Spacer()
-
-            NavigationLink {
-                Page2View(store: store)
-            } label: {
-                Image(systemName: "plus")
-                    .font(.largeTitle)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .clipShape(Circle())
-                    .background(
-                        Circle()
-                            .fill(Color.blue)
-                            .shadow(radius: 8)
-                    )
-            }
-
-        }
-        .padding(.top, 80)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.blue.opacity(0.45),
-                    Color.white
-                ],
-                startPoint: .top,
-                endPoint: .bottom
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.55),
+                        Color.green.opacity(0.25)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             )
-        )
-            
-            
+            .onAppear {
+                loadExpenses()
+            }
+        }
+        
+        func loadExpenses() {
+
+            expenses = Array(CoreDataManager.shared.fetchExpenses().reversed())
+
+            print("Total Expenses: \(expenses.count)")
+        
+        }
+        func totalAmount() -> Double {
+
+            expenses.reduce(0) { partialResult, expense in
+                partialResult + expense.expenseAmount
+            }
+
         }
     }
     
-
     #Preview {
-        HomeView(store: ExpenseStore())
+        NavigationStack {
+            HomeView()
+        }
     }
+
