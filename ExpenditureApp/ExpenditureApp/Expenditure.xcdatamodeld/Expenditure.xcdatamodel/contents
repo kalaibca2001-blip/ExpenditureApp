@@ -6,5 +6,6 @@
         <attribute name="expenseIsDeleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="expenseNo" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="expenseTitle" optional="YES" attributeType="String"/>
+        <attribute name="income" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
 </model>

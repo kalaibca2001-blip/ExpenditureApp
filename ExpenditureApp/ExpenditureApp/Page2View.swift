@@ -215,17 +215,7 @@ struct Page2View: View {
             }
         }
        
-//        .onAppear {
-//            
-//            if let expense = editingExpense {
-//                
-//                self.expense = expense.expenseTitle ?? ""
-//                self.amount = "\(expense.expenseAmount)"
-//                self.selectedDate = expense.expenseDate ?? Date()
-//                
-//            }
-//            
-//        }
+
     }
     
     

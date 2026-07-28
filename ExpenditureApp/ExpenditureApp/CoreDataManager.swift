@@ -31,47 +31,47 @@ final class CoreDataManager {
     }
     
     func fetchExpenses() -> [Expenses] {
-
+        
         let request: NSFetchRequest<Expenses> = Expenses.fetchRequest()
-
+        
         request.predicate = NSPredicate(
             format: "expenseIsDeleted == %@",
             NSNumber(value: false)
         )
-
+        
         do {
             return try context.fetch(request)
         } catch {
             return []
         }
-
-    }   
+        
+    }
     //this reusable function can be used in both the edit and delete buttons to follw the content that can be easy to modify through this
     
-  
+    
     
     func findExpense(by expenseNo: UUID) -> Expenses? {
         print("Searching for UUID:")
-            print(expenseNo)
-
-
+        print(expenseNo)
+        
+        
         let request: NSFetchRequest<Expenses> = Expenses.fetchRequest()
-
+        
         request.predicate = NSPredicate(format: "expenseNo == %@", expenseNo as CVarArg)
         do {
-
+            
             let expenses = try context.fetch(request)
-
+            
             return expenses.first
-
+            
         } catch {
-
+            
             print(error.localizedDescription)
-
+            
             return nil
-
+            
         }
-       
+        
     }
     
     func updateExpense(
@@ -86,7 +86,7 @@ final class CoreDataManager {
             return
         }
         print("Expense found")
-
+        
         expense.expenseTitle = expenseTitle
         expense.expenseAmount = expenseAmount
         expense.expenseDate = expenseDate
@@ -102,16 +102,36 @@ final class CoreDataManager {
         guard let expense = findExpense(by: expenseNo) else {
             return
         }
+
         expense.expenseIsDeleted = true
+
         do {
-
             try context.save()
-
         } catch {
-
             print(error.localizedDescription)
-
         }
     }
 
-}
+    func fetchTodayExpenses() -> [Expenses] {
+
+        let request: NSFetchRequest<Expenses> = Expenses.fetchRequest()
+
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: Date())
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
+        request.predicate = NSPredicate(
+            format: "expenseDate >= %@ AND expenseDate < %@ AND expenseIsDeleted == %@",
+            startOfDay as NSDate,
+            endOfDay as NSDate,
+            NSNumber(value: false)
+        )
+
+        do {
+            return try context.fetch(request)
+        } catch {
+            return []
+        }
+    }
+
+    }
