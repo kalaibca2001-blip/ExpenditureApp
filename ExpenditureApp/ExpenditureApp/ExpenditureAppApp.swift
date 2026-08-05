@@ -13,3 +13,16 @@ struct ExpenditureAppApp: App {
         }
     }
 }
+//import SwiftUI
+//
+//@main
+//struct ExpenditureAppApp: App {
+//
+//    var body: some Scene {
+//
+//        WindowGroup {
+//            Color.red
+//                .ignoresSafeArea()
+//        }
+//    }
+//}

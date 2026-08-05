@@ -6,46 +6,91 @@
 //
 import SwiftUI
 
+
 struct HomeViewNew: View {
     
-    @State private var todayExpenses: [Expenses] = []
-    
     @State private var expenses: [Expenses] = []
+    @State private var income: [Income] = []
+    @State private var transactionDates: [Date] = []
     
-    @State private var isEditingIncome = false
-    @State private var totalIncome = ""
-    
-    var todayTotal: Double {
-        todayExpenses.reduce(0) { $0 + $1.expenseAmount }
+    var totalExpense: Double {
+        expenses.reduce(0) { $0 + $1.expenseAmount }
     }
+    
+    var totalIncome: Double {
+        income.reduce(0) { $0 + $1.incomeAmount }
+    }
+    
+    //1
+    var hasTransactions: Bool {
+        !transactionDates.isEmpty
+    }
+    
+    
+    //2
+    var hasToday: Bool {
+        
+        guard let firstDate = transactionDates.first else {
+            return false
+        }
+        
+        return Calendar.current.isDateInToday(firstDate)
+    }
+    
+    //3
+    var hasYesterday: Bool {
+        
+        guard transactionDates.count > 1 else {
+            return false
+        }
+        
+        return Calendar.current.isDateInYesterday(transactionDates[1])
+    }
+    
+    //4
+    //4
+    //4
+    var lastActivityDate: Date? {
+
+        if hasToday {
+            return nil
+        }
+
+        return transactionDates.first
+    }
+
+    //5
+    var showLoadMore: Bool {
+        transactionDates.count >= 4
+    }
+  
+    
+  
     
     var body: some View {
         
         NavigationStack {
             
-            
             ScrollView {
-                
                 
                 VStack(spacing: 20) {
                     
-                    Text("Expense Records")
+                    Text("Overview")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                        .padding(.top, 20)
+                        .padding(.top, 15)
                     
                     // MARK: - Expense & Income
                     
                     HStack(spacing: 10) {
-                        
                         
                         VStack(alignment: .leading, spacing: 10) {
                             
                             Text("Total Expense")
                                 .font(.headline)
                             
-                            Text("₹\(totalExpense(), specifier: "%.2f")")
-                                .font(.system(size: 30, weight: .bold))
+                            Text("₹\(totalExpense, specifier: "%.2f")")
+                                .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.red)
                             
                         }
@@ -57,42 +102,13 @@ struct HomeViewNew: View {
                         
                         VStack(alignment: .leading, spacing: 10) {
                             
-                            HStack {
-                                
-                                Text("Total Income")
-                                    .font(.headline)
-                                
-                                Spacer()
-                                
-                                Button {
-                                    isEditingIncome.toggle()
-
-
-                                    
-                                } label: {
-                                    
-                                    Image(systemName: "square.and.pencil")
-                                        .foregroundColor(.blue)
-                                }
-                            }
+                            Text("Total Income")
+                                .font(.headline)
                             
-                            if isEditingIncome {
-
-                                TextField("₹0.00", text: $totalIncome)
-                                    .keyboardType(.numberPad)
-                                    .font(.system(size: 30, weight: .bold))
-                                    .foregroundColor(.green)
-                                    .multilineTextAlignment(.leading)
-                                    .textFieldStyle(.plain)
-
-                            } else {
-
-                                Text(totalIncome.isEmpty ? "₹0.00" : "₹\(totalIncome)")
-                                    .font(  .system(size: 30, weight: .bold))
-                                    .foregroundColor(.green)
-                                   
-                            }
-                        
+                            Text("₹\(totalIncome, specifier: "%.2f")")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.green)
+                            
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -102,14 +118,14 @@ struct HomeViewNew: View {
                     }
                     .padding(.horizontal)
                     
-                    // MARK: - Current Balance
+                    // MARK: - Balance
                     
                     VStack(alignment: .leading, spacing: 10) {
                         
                         Text("Current Balance")
                             .font(.headline)
                         
-                        Text("₹\(totalExpense(), specifier: "%.2f")")
+                        Text("₹\(totalIncome - totalExpense, specifier: "%.2f")")
                             .font(.system(size: 30, weight: .bold))
                             .foregroundColor(.blue)
                         
@@ -125,7 +141,7 @@ struct HomeViewNew: View {
                     
                     HStack {
                         
-                        Text("Latest Spending")
+                        Text("Recent Activity")
                             .font(.title2)
                             .fontWeight(.bold)
                         
@@ -134,165 +150,234 @@ struct HomeViewNew: View {
                     }
                     .padding(.horizontal)
                     
-                    // MARK: - Date Cards
-                    
-                    VStack(spacing: 15) {
+                    if hasTransactions {
                         
-                        // Today Card
-                        NavigationLink {
+                        VStack(spacing: 15) {
                             
-                            DayExpenseView()
-                        } label: {
-                            
-                            VStack(alignment: .leading, spacing: 10) {
+                            // Today
+                            if hasToday {
                                 
-                                Text("Today")
-                                    .font(.headline)
-                                
-                                HStack{
-                                    Text("₹\(todayTotal, specifier: "%.2f")")
-                                        .font(.title3)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.blue)
+                                NavigationLink {
+                                    DateWiseTransactionView(selectedDate: Date())
+                                } label: {
                                     
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.gray)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                    
-                                    
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        
+                                        Text("Today")
+                                            .font(.headline)
+                                        
+                                        HStack {
+                                            
+                                            Text(Date().formatted(date: .abbreviated, time: .omitted))
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.gray)
+                                        }
+                                        
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 70)
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                    .cornerRadius(20)
+                                    .shadow(color: .black.opacity(0.08), radius: 8)
                                 }
-                                
+                                .buttonStyle(.plain)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .frame(height: 80)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(20)
-                            .shadow(color: .black.opacity(0.08), radius: 8)
-                        }
-                        
-                        // Yesterday Card
-                        
-                        VStack(alignment: .leading, spacing: 10) {
+                            // Yesterday
                             
-                            Text("Yesterday")
-                                .font(.headline)
-                            
-                            HStack{
-                                Text("₹0.00")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.blue)
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                                
-                            }
-                            
-                            
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(height: 80)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.08), radius: 8)
-                        
-                        // 22 Jul Card
-                        
-                        VStack(alignment: .leading, spacing: 10) {
-                            
-                            Text("22 Jul")
-                                .font(.headline)
-                            
-                            HStack{
-                                Text("₹0.00")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.blue)
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                                
+                            if hasYesterday {
+                                NavigationLink {
+                                    
+                                    DateWiseTransactionView(
+                                        selectedDate: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+                                    )
+                                    
+                                } label: {
+                                    
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        
+                                        Text("Yesterday")
+                                            .font(.headline)
+                                        
+                                        HStack {
+                                            
+                                            Text(
+                                                Calendar.current
+                                                    .date(byAdding: .day, value: -1, to: Date())!
+                                                    .formatted(date: .abbreviated, time: .omitted)
+                                            )
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.gray)
+                                        }
+                                        
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 70)
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                    .cornerRadius(20)
+                                    .shadow(color: .black.opacity(0.08), radius: 8)
+                                }
+                                .buttonStyle(.plain)
                             }
                             
                             
-                          
+                            if !showLoadMore,
+                               let lastDate = lastActivityDate {
+
+                                NavigationLink {
+
+                                    DateWiseTransactionView(selectedDate: lastDate)
+
+                                } label: {
+
+                                    VStack(alignment: .leading, spacing: 10) {
+
+                                        Text("Last Activity")
+                                            .font(.headline)
+
+                                        HStack {
+
+                                            Text(lastDate.formatted(date: .abbreviated, time: .omitted))
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+
+                                            Spacer()
+
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.gray)
+
+                                        }
+
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 70)
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 12)
+                                    .background(Color.white)
+                                    .cornerRadius(20)
+                                    .shadow(color: .black.opacity(0.08), radius: 8)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            
+                            // Load More Dates
+                           
+                            if showLoadMore {
+                                NavigationLink {
+                                    
+                                    LoadMoreDatesView()
+                                    
+                                } label: {
+                                    
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        
+                                        Text("Load More Dates")
+                                            .font(.headline)
+                                            .foregroundColor(.black)
+                                        
+                                        HStack {
+                                            
+                                            Text("Browse Transactions")
+                                                .foregroundColor(.blue)
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.gray)
+                                        }
+                                        
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 80)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(20)
+                                    .shadow(color: .black.opacity(0.08), radius: 8)
+                                }
+                            }
                             
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(height: 80)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.08), radius: 8)
                         
+                    } else {
+                        
+                        VStack(spacing: 15) {
+                            
+                            Image(systemName: "wallet.bifold")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            
+                            Text("No Transactions Yet")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                            
+                            Text("Start tracking your income and expenses.")
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.gray)
+                            
+                            Text("Tap the + button below to add your first record.")
+                                .font(.footnote)
+                                .foregroundColor(.blue)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 40)
                     }
-                    .padding(.horizontal)
                     
                     Spacer(minLength: 30)
                     
                 }
-               
-                .onAppear {
-                    todayExpenses = CoreDataManager.shared.fetchTodayExpenses()
-                }
-        }
-            
-            .overlay(alignment: .bottom){
-
+            }
+            .overlay(alignment: .bottom) {
+                
                 NavigationLink {
-
+                    
                     Page2View()
-
+                    
                 } label: {
-
+                    
                     Image(systemName: "plus")
                         .font(.title2)
                         .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
+                        .frame(width: 60, height: 60)
                         .background(Color.blue)
                         .clipShape(Circle())
                         .shadow(radius: 8)
-
                 }
-//                .padding(.trailing, 25)
-                .padding(.bottom, 30)
-
+                .padding(.bottom, 20)
             }
-         
-               
-                
-            
-            .background {
+            .background(
                 LinearGradient(
                     colors: [
-                        Color.blue.opacity(0.55),
-                        Color.green.opacity(0.25)
+                        Color.blue.opacity(0.19),
+                        Color.mint.opacity(0.10)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
+            )
+            .onAppear {
+                expenses = CoreDataManager.shared.fetchExpenses()
+                income = CoreDataManager.shared.fetchIncome()
+                transactionDates = CoreDataManager.shared.fetchTransactionDates()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         
-        .onAppear {
-            todayExpenses = CoreDataManager.shared.fetchTodayExpenses()
-            loadExpenses()
-        }
-        }
-    func loadExpenses() {
-        expenses = Array(CoreDataManager.shared.fetchExpenses().reversed())
     }
-    func totalExpense() -> Double {
-        expenses.reduce(0) { $0 + $1.expenseAmount }
-    }
-    
-    }
+}
 #Preview {
     HomeViewNew()
 }
+

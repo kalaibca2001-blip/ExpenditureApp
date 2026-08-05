@@ -16,11 +16,13 @@ struct Page2View: View {
     @State private var selectedDate = Date()
     @State private var showDatePicker = false
     
+    @State private var isIncome = false
     
     @State private var expense = ""
     @State private var amount = ""
     @Environment(\.dismiss) private var dismiss
     var editingExpense: Expenses? = nil
+    var editingIncome: Income? = nil
     
     var body: some View {
         
@@ -69,17 +71,26 @@ struct Page2View: View {
             )
             
             // Expense and expense textfield
-            Text("Expense")
-                .font(.headline)
-            
-            TextField("Enter Expense", text: $expense)
-                .padding()
-                .background(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.black, lineWidth: 1)
-                )
-                .font(.body)
+            HStack {
+                Text(isIncome ? "Income" : "Expense")
+                    .font(.headline)
+                    .foregroundColor(isIncome ? .green : .red)
+
+                Spacer()
+
+                Toggle("", isOn: $isIncome)
+                    .labelsHidden()
+            }
+            TextField(
+                isIncome ? "Enter Income" : "Enter Expense",
+                text: $expense
+            )
+            .padding()
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.black, lineWidth: 1)
+            )
             
             
             
@@ -103,41 +114,68 @@ struct Page2View: View {
                 Spacer()
                 
                 Button {
-                    
                     if !expense.isEmpty && !amount.isEmpty {
-                        
-                        if let editingExpense = editingExpense {
-                            print("UUID from Page2:")
-                               print(editingExpense.expenseNo!)
-                            
-                            CoreDataManager.shared.updateExpense(
-                                expenseNo: editingExpense.expenseNo!,
-                                expenseTitle: expense,
-                                expenseAmount: Double(amount) ?? 0.0,
-                                expenseDate: selectedDate
-                            )
-                            
+
+                        if isIncome {
+
+                            // MARK: - Income
+
+                            if let editingIncome = editingIncome {
+
+                                CoreDataManager.shared.updateIncome(
+                                    incomeNo: editingIncome.incomeNo!,
+                                    incomeTitle: expense,
+                                    incomeAmount: Double(amount) ?? 0.0,
+                                    incomeDate: selectedDate
+                                )
+
+                            } else {
+
+                                CoreDataManager.shared.saveIncome(
+                                    title: expense,
+                                    amount: Double(amount) ?? 0.0,
+                                    date: selectedDate
+                                )
+                            }
+
                         } else {
-                            
-                            let newExpense = Expense(
-                                expenseDate: selectedDate,
-                                expenseAmount: Double(amount) ?? 0.0,
-                                expenseTitle: expense,
-                                expenseNo: UUID()
-                            )
-                            
-                            CoreDataManager.shared.saveExpense(expense: newExpense)
-                            
+
+                            // MARK: - Expense
+
+                            if let editingExpense = editingExpense {
+
+                                CoreDataManager.shared.updateExpense(
+                                    expenseNo: editingExpense.expenseNo!,
+                                    expenseTitle: expense,
+                                    expenseAmount: Double(amount) ?? 0.0,
+                                    expenseDate: selectedDate
+                                )
+
+                            } else {
+
+                                CoreDataManager.shared.saveExpense(
+                                    title: expense,
+                                    amount: Double(amount) ?? 0.0,
+                                    date: selectedDate
+                                )
+
+                            }
                         }
-                        
+
                         expense = ""
                         amount = ""
                         dismiss()
                     }
                     
+//
+                    
                 } label: {
                     
-                    Text(editingExpense == nil ? "Add" : "Update")
+                    Text(
+                        editingExpense == nil && editingIncome == nil
+                        ? "Add"
+                        : "Update"
+                    )
                         .font(.headline)
                         .fontWeight(.medium)
                         .frame(width: 120, height: 45)
@@ -155,7 +193,7 @@ struct Page2View: View {
         }
        
         .padding()
-        .navigationTitle("Add Expense")
+        .navigationTitle(isIncome ? "Add Income" : "Add Expense")
         .navigationBarTitleDisplayMode(.inline)
        
        
@@ -188,16 +226,17 @@ struct Page2View: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color.green.opacity(0.55),
+                    isIncome
+                    ? Color.green.opacity(0.18)
+                    : Color.red.opacity(0.18),
                     Color.white
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .bottom,
+                endPoint: .top
             )
             .ignoresSafeArea()
         )
         
-       
         .onAppear {
 
             if let editingExpense = editingExpense {
@@ -205,16 +244,24 @@ struct Page2View: View {
                 expense = editingExpense.expenseTitle ?? ""
                 amount = String(editingExpense.expenseAmount)
                 selectedDate = editingExpense.expenseDate ?? Date()
+                isIncome = false
+
+            } else if let editingIncome = editingIncome {
+
+                expense = editingIncome.incomeTitle ?? ""
+                amount = String(editingIncome.incomeAmount)
+                selectedDate = editingIncome.incomeDate ?? Date()
+                isIncome = true
 
             } else {
 
                 expense = ""
                 amount = ""
                 selectedDate = Date()
+                isIncome = false
 
             }
         }
-       
 
     }
     

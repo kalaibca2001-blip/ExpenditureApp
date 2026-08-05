@@ -19,4 +19,18 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
+//import SwiftUI
+//
+//struct ContentView: View {
+//
+//    var body: some View {
+//
+//        Text("Hello Kalai")
+//            .font(.largeTitle)
+//            .foregroundColor(.blue)
+//    }
+//}
+//
+//#Preview {
+//    ContentView()
+//}
