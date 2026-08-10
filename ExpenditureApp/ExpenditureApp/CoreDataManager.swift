@@ -311,5 +311,31 @@ final class CoreDataManager {
 
         return sortedDates
     }
+    
+    func fetchTransactionDates(
+        from fromDate: Date,
+        to toDate: Date
+    ) -> [Date] {
+
+        let allDates = fetchTransactionDates()
+
+        let calendar = Calendar.current
+
+        let startDate = calendar.startOfDay(for: fromDate)
+
+        let endDate = calendar.date(
+            byAdding: .day,
+            value: 1,
+            to: calendar.startOfDay(for: toDate)
+        )!
+
+        let filteredDates = allDates.filter {
+
+            $0 >= startDate && $0 < endDate
+
+        }
+
+        return filteredDates
+    }
     }
 

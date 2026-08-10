@@ -11,6 +11,12 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     
+    @State private var goToHome = false
+    
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         NavigationStack {
@@ -60,9 +66,39 @@ struct LoginView: View {
                    
                     
                     Button {
-                       
+                        
+                        let enteredEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        let savedEmail = KeychainManager.shared.read(forKey: "email")
+                        let savedPassword = KeychainManager.shared.read(forKey: "password")
+                        
+                        if enteredEmail.isEmpty {
+                            
+                            alertMessage = "Please enter your email."
+                            showAlert = true
+                            
+                        } else if password.isEmpty {
+                            
+                            alertMessage = "Please enter your password."
+                            showAlert = true
+                            
+                        } else if enteredEmail == savedEmail && password == savedPassword {
+                            
+                            goToHome = true
+                            
+                        } else {
+                            
+                            print("Saved Email:", savedEmail ?? "nil")
+                            print("Entered Email:", enteredEmail)
+                            print("Password exists:", savedPassword != nil)
+                            
+                            alertMessage = "Invalid email or password."
+                            showAlert = true
+                        }
                     } label: {
-
+                        
+                    
+                        
                         Text("Login")
                             .font(.headline)
                             .fontWeight(.bold)
@@ -77,6 +113,12 @@ struct LoginView: View {
                     
                     
                     .padding(.bottom, 20)
+                    
+                    .alert(alertMessage, isPresented: $showAlert) {
+                        Button("OK", role: .cancel) { }
+                    }
+                    
+                    
                     Text("Don't have an account?")
                         .foregroundStyle(.black)
                     
@@ -97,6 +139,10 @@ struct LoginView: View {
                 Spacer()
                 
             }
+            
+                .navigationDestination(isPresented: $goToHome) {
+                       HomeViewNew()
+                   }
         }
         
         

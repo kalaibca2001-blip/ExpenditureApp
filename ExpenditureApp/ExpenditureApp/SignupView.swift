@@ -12,6 +12,9 @@ struct SignupView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    
+    @State private var showAlert = false
+    @State private var alertMessage = ""
     @Environment(\.dismiss) private var dismiss
     
     
@@ -47,6 +50,7 @@ struct SignupView: View {
                 TextField("Enter your email", text: $email)
                     .padding()
                     .background(Color.white)
+                    .tint(.blue)
                     .cornerRadius(20)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
@@ -61,6 +65,7 @@ struct SignupView: View {
                 SecureField("Enter your password", text: $password)
                     .padding()
                     .background(Color.white)
+                    .tint(.blue)
                     .cornerRadius(20)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
@@ -81,9 +86,65 @@ struct SignupView: View {
                         )
                 
                 Button {
-
+                    
+                    let trimmedName = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+                    
+                    if trimmedName.isEmpty {
+                        
+                        alertMessage = "Please enter your full name."
+                        showAlert = true
+                        
+                    } else if trimmedEmail.isEmpty {
+                        
+                        alertMessage = "Please enter your email."
+                        showAlert = true
+                        
+                    } else if !trimmedEmail.contains("@") || !trimmedEmail.contains(".") {
+                        
+                        alertMessage = "Please enter a valid email address."
+                        showAlert = true
+                        
+                    } else if password.isEmpty {
+                        
+                        alertMessage = "Please enter your password."
+                        showAlert = true
+                        
+                    } else if confirmPassword.isEmpty {
+                        
+                        alertMessage = "Please confirm your password."
+                        showAlert = true
+                        
+                    } else if password != confirmPassword {
+                        
+                        alertMessage = "Passwords do not match."
+                        showAlert = true
+                        
+                    } else {
+                        
+                        // Save user details to Keychain
+                        KeychainManager.shared.save(
+                            trimmedName,
+                            forKey: "fullName"
+                        )
+                        
+                        KeychainManager.shared.save(
+                            trimmedEmail,
+                            forKey: "email"
+                        )
+                        
+                        KeychainManager.shared.save(
+                            password,
+                            forKey: "password"
+                        )
+                        
+                        alertMessage = "Account created successfully!"
+                        showAlert = true
+                    }
+                    
                 } label: {
-
+                    
+                    
                     Text("Create Account")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -94,38 +155,44 @@ struct SignupView: View {
 
                 }
                 HStack {
-
+                    
                     Text("Already have an account?")
-
+                    
                     Button {
                         dismiss()
                     } label: {
-
                         Text("Login")
                             .fontWeight(.bold)
-                            
                     }
-                    
-
                 }
-                
-               
+
                 .frame(maxWidth: .infinity)
                 .padding(.top, 10)
+
                 Spacer()
-            }
-            .padding()
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color.cyan.opacity(0.35),
-                        Color.blue.opacity(0.25)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
+
+                }
+                .alert(alertMessage, isPresented: $showAlert) {
+                    
+                    Button("OK") {
+                        
+                        if alertMessage == "Account created successfully!" {
+                            dismiss()
+                        }
+                    }
+                }
+                .padding()
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color.cyan.opacity(0.35),
+                            Color.blue.opacity(0.25)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
                 )
-                .ignoresSafeArea()
-            )
         }
         
     }

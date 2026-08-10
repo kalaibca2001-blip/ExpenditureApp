@@ -8,6 +8,11 @@ struct LoadMoreDatesView: View {
     @State private var showCalendar = false
     @State private var isSelectingFromDate = true
     @State private var tempSelectedDate = Date()
+    
+    @State private var filteredDates: [Date] = []
+
+    @State private var showAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
 
@@ -102,10 +107,123 @@ struct LoadMoreDatesView: View {
                 .background(Color.blue.opacity(0.12))
                 .cornerRadius(12)
 
+                
+                Button {
+
+                    let calendar = Calendar.current
+
+                    let from = calendar.startOfDay(for: fromDate)
+                    let to = calendar.startOfDay(for: toDate)
+
+                    // Check whether To Date is before From Date
+
+                    if to < from {
+
+                        alertMessage = "To Date cannot be earlier than From Date."
+                        showAlert = true
+                        return
+                    }
+
+                    // Calculate number of days
+
+                    let days = calendar.dateComponents([.day], from: from, to: to).day ?? 0
+
+                    // Maximum 10 days
+
+                    if days > 9 {
+
+                        alertMessage = "You can browse only a maximum of 10 days."
+                        showAlert = true
+                        return
+                    }
+
+                    filteredDates = CoreDataManager.shared.fetchTransactionDates(
+                        from: fromDate,
+                        to: toDate
+                    )
+
+                    if filteredDates.isEmpty {
+
+                        alertMessage = "No transactions found for the selected date range."
+                        showAlert = true
+                    }
+
+                } label: {
+
+                    Text("Done")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(width: 90, height: 35)
+                        .background(Color.blue)
+                        .cornerRadius(20)
+                }
+                .frame(maxWidth: .infinity)
+                
+//                Button {
+
+                    // Validation and Core Data search
+                    // We will write this in the next step.
+//
+//                } label: {
+//
+//                    Text("Done")
+//                        .font(.headline)
+//                        .foregroundColor(.white)
+//                        .frame(width: 90, height: 35)
+//                        .background(Color.blue.opacity(5))
+//                        .cornerRadius(20)
+//                }
+//                .frame(maxWidth: .infinity)
+                
+                
                 // MARK: - Browse by Date
 
                 Text("Browse by Date")
                     .font(.headline)
+
+                if !filteredDates.isEmpty {
+
+                    VStack(spacing: 15) {
+
+                        ForEach(filteredDates, id: \.self) { date in
+
+                            NavigationLink {
+
+                                DateWiseTransactionView(selectedDate: date)
+
+                            } label: {
+
+                                VStack(alignment: .leading, spacing: 8) {
+
+                                    Text(date.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.headline)
+                                        .foregroundColor(.black)
+
+                                    HStack {
+
+                                        Text(date.formatted(.dateTime.weekday(.wide)))
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.gray)
+                                    }
+
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.white)
+                                .cornerRadius(20)
+                                .shadow(color: .black.opacity(0.08), radius: 8)
+                            }
+                            .buttonStyle(.plain)
+
+                        }
+
+                    }
+                }
 
                 Spacer()
 
@@ -152,6 +270,14 @@ struct LoadMoreDatesView: View {
                 }
             }
 
+        }
+        .alert("Invalid Selection", isPresented: $showAlert) {
+
+            Button("OK", role: .cancel) { }
+
+        } message: {
+
+            Text(alertMessage)
         }
     }
 }
