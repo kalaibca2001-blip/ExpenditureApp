@@ -476,32 +476,23 @@ struct HomeViewNew: View {
                             
                         } else {
                             
-                            VStack(spacing: 15) {
+                            VStack(spacing: 12) {
                                 
-                                Image(
-                                    systemName: "wallet.bifold.fill"
-                                )
-                                .font(.system(size: 70))
-                                .foregroundColor(.blue)
+                                Image("emptyTransactions")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 260, height: 230)
                                 
                                 Text("No Transactions Yet")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
                                 
-                                Text(
-                                    "Start tracking your income and expenses."
-                                )
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(.gray)
-                                
-                                Text(
-                                    "Tap the + button below to add your first record."
-                                )
-                                .font(.footnote)
-                                .foregroundColor(.blue)
+                                Text("Your activity will appear here.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.gray)
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical, 40)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 10)
                         }
                         
                         Spacer(minLength: 30)
@@ -723,17 +714,22 @@ struct HomeViewNew: View {
 
                                 Button {
                                     
-                                    KeychainManager.shared.save(
-                                            "false",
-                                            forKey: "isLoggedIn"
-                                        )
-
+                                    // Remove login status
+                                    KeychainManager.shared.delete(
+                                        forKey: "isLoggedIn"
+                                    )
+                                    
+                                    // Tell ContentView that logout happened
+                                    NotificationCenter.default.post(
+                                        name: Notification.Name("userDidLogout"),
+                                        object: nil
+                                    )
+                                    
+                                    // Close drawer
                                     withAnimation(.easeInOut) {
                                         showAccountDrawer = false
                                     }
-
-                                    dismiss()
-
+                                    
                                 } label: {
 
                                     HStack(spacing: 15) {

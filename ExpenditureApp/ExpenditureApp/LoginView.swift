@@ -12,15 +12,10 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     
-    @State private var goToHome = false
-    
     @State private var showAlert = false
     @State private var alertMessage = ""
     
-    @Environment(\.dismiss) private var dismiss
-    
     // Keyboard Focus
-    
     @FocusState private var focusedField: LoginField?
     
     enum LoginField {
@@ -45,7 +40,10 @@ struct LoginView: View {
                         .padding(.bottom, 100)
                     
                     
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(
+                        alignment: .leading,
+                        spacing: 10
+                    ) {
                         
                         Text("Expense Tracker")
                             .font(.largeTitle)
@@ -56,7 +54,7 @@ struct LoginView: View {
                             .foregroundStyle(.gray)
                         
                         
-                        //  Email
+                        // MARK: - Email
                         
                         Text("Email")
                             .font(.headline)
@@ -88,7 +86,7 @@ struct LoginView: View {
                         }
                         
                         
-                        //  Password
+                        // MARK: - Password
                         
                         Text("Password")
                             .font(.headline)
@@ -118,54 +116,63 @@ struct LoginView: View {
                         }
                         
                         
-                        //  Login Button
+                        // MARK: - Login Button
                         
                         Button {
                             
+                            // Hide keyboard
                             focusedField = nil
                             
                             let enteredEmail =
-                            email.trimmingCharacters(
-                                in: .whitespacesAndNewlines
-                            )
+                                email.trimmingCharacters(
+                                    in: .whitespacesAndNewlines
+                                )
                             
                             let savedEmail =
-                            KeychainManager.shared.read(
-                                forKey: "email"
-                            )
+                                KeychainManager.shared.read(
+                                    forKey: "email"
+                                )
                             
                             let savedPassword =
-                            KeychainManager.shared.read(
-                                forKey: "password"
-                            )
+                                KeychainManager.shared.read(
+                                    forKey: "password"
+                                )
                             
                             
                             if enteredEmail.isEmpty {
                                 
                                 alertMessage =
-                                "Please enter your email."
+                                    "Please enter your email."
+                                
                                 showAlert = true
                                 
                             } else if password.isEmpty {
                                 
                                 alertMessage =
-                                "Please enter your password."
+                                    "Please enter your password."
+                                
                                 showAlert = true
                                 
                             } else if enteredEmail == savedEmail &&
-                                        password == savedPassword {
+                                      password == savedPassword {
                                 
+                                // Save login status
                                 KeychainManager.shared.save(
                                     "true",
                                     forKey: "isLoggedIn"
                                 )
                                 
-                                goToHome = true
+                                // Tell ContentView that login succeeded
+                                NotificationCenter.default.post(
+                                    name: Notification.Name("userDidLogin"),
+                                    object: nil
+                                )
                                 
                             } else {
                                 
                                 alertMessage =
-                                "Invalid email or password."
+                                    "Invalid email or password."
+                                
                                 showAlert = true
                             }
                             
@@ -185,6 +192,7 @@ struct LoginView: View {
                             alertMessage,
                             isPresented: $showAlert
                         ) {
+                            
                             Button(
                                 "OK",
                                 role: .cancel
@@ -194,7 +202,7 @@ struct LoginView: View {
                         }
                         
                         
-                        //  Sign Up
+                        // MARK: - Sign Up
                         
                         Text("Don't have an account?")
                             .foregroundStyle(.black)
@@ -214,14 +222,11 @@ struct LoginView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
-            .navigationDestination(
-                isPresented: $goToHome
-            ) {
-                HomeViewNew()
-            }
         }
     }
 }
+
+
 #Preview {
     LoginView()
 }

@@ -16,10 +16,12 @@ struct SignupView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     
+    @State private var goToHome = false
+    
     @Environment(\.dismiss) private var dismiss
     
     
-    // Keyboard Focus
+    // MARK: - Keyboard Focus
     
     @FocusState private var focusedField: SignupField?
     
@@ -38,6 +40,8 @@ struct SignupView: View {
             spacing: 25
         ) {
             
+            // MARK: - Title
+            
             Text("Create Account")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -46,7 +50,7 @@ struct SignupView: View {
             Spacer()
             
             
-            // Full Name
+            // MARK: - Full Name
             
             Text("Full Name")
                 .font(.headline)
@@ -76,7 +80,7 @@ struct SignupView: View {
             }
             
             
-//            Email
+            // MARK: - Email
             
             Text("Email")
                 .font(.headline)
@@ -88,7 +92,6 @@ struct SignupView: View {
             .padding()
             .tint(.blue)
             .background(Color.white)
-            .tint(.blue)
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
@@ -109,7 +112,7 @@ struct SignupView: View {
             }
             
             
-            //  Password
+            // MARK: - Password
             
             Text("Password")
                 .font(.headline)
@@ -119,8 +122,8 @@ struct SignupView: View {
                 text: $password
             )
             .padding()
-            .background(Color.white)
             .tint(.blue)
+            .background(Color.white)
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
@@ -139,7 +142,7 @@ struct SignupView: View {
             }
             
             
-            // Confirm Password
+            // MARK: - Confirm Password
             
             Text("Confirm Password")
                 .font(.headline)
@@ -169,11 +172,11 @@ struct SignupView: View {
             }
             
             
-            // Create Account
+            // MARK: - Create Account
             
             Button {
                 
-                // Dismiss keyboard first
+                // Hide keyboard
                 focusedField = nil
                 
                 let trimmedName =
@@ -186,6 +189,8 @@ struct SignupView: View {
                         in: .whitespacesAndNewlines
                     )
                 
+                
+                // MARK: - Validation
                 
                 if trimmedName.isEmpty {
                     
@@ -226,7 +231,7 @@ struct SignupView: View {
                     
                 } else {
                     
-                    //  Save User Details
+                    // MARK: - Save Account
                     
                     KeychainManager.shared.save(
                         trimmedName,
@@ -243,6 +248,13 @@ struct SignupView: View {
                         forKey: "password"
                     )
                     
+                    // New account is automatically logged in
+                    KeychainManager.shared.save(
+                        "true",
+                        forKey: "isLoggedIn"
+                    )
+                    
+                    // Show success message
                     alertMessage =
                         "Account created successfully!"
                     
@@ -261,7 +273,7 @@ struct SignupView: View {
             }
             
             
-            // Login
+            // MARK: - Login
             
             HStack {
                 
@@ -270,7 +282,9 @@ struct SignupView: View {
                 Button {
                     focusedField = nil
                     dismiss()
+                    
                 } label: {
+                    
                     Text("Login")
                         .fontWeight(.bold)
                 }
@@ -281,6 +295,11 @@ struct SignupView: View {
             
             Spacer()
         }
+        .padding()
+        
+        
+        // MARK: - Success / Validation Alert
+        
         .alert(
             alertMessage,
             isPresented: $showAlert
@@ -293,11 +312,24 @@ struct SignupView: View {
                 if alertMessage ==
                     "Account created successfully!" {
                     
-                    dismiss()
+                    // Go directly to Home
+                    goToHome = true
                 }
             }
         }
-        .padding()
+        
+        
+        // MARK: - Go To Home
+        
+        .navigationDestination(
+            isPresented: $goToHome
+        ) {
+            HomeViewNew()
+        }
+        
+        
+        // MARK: - Background
+        
         .background(
             LinearGradient(
                 colors: [
