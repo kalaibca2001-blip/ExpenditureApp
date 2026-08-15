@@ -31,7 +31,7 @@ struct LoadMoreDatesView: View {
 
             VStack(alignment: .leading, spacing: 20) {
 
-                // MARK: - From Date
+                //  From Date
 
                 Text("From Date")
                     .font(.headline)
@@ -61,7 +61,7 @@ struct LoadMoreDatesView: View {
                         .stroke(Color.gray)
                 )
 
-                // MARK: - To Date
+                //  To Date
 
                 Text("To Date")
                     .font(.headline)
@@ -91,7 +91,7 @@ struct LoadMoreDatesView: View {
                         .stroke(Color.gray)
                 )
 
-                // MARK: - Info
+                // Info
 
                 HStack(spacing: 12) {
 
@@ -159,24 +159,9 @@ struct LoadMoreDatesView: View {
                 }
                 .frame(maxWidth: .infinity)
                 
-//                Button {
-
-                    // Validation and Core Data search
-                    // We will write this in the next step.
-//
-//                } label: {
-//
-//                    Text("Done")
-//                        .font(.headline)
-//                        .foregroundColor(.white)
-//                        .frame(width: 90, height: 35)
-//                        .background(Color.blue.opacity(5))
-//                        .cornerRadius(20)
-//                }
-//                .frame(maxWidth: .infinity)
+             
                 
-                
-                // MARK: - Browse by Date
+                //  Browse by Date
 
                 Text("Browse by Date")
                     .font(.headline)
@@ -232,7 +217,7 @@ struct LoadMoreDatesView: View {
             .navigationTitle("Load More Dates")
             .navigationBarTitleDisplayMode(.inline)
 
-            // MARK: - Floating Calendar
+            //  Floating Calendar
 
             if showCalendar {
 

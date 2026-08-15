@@ -4,6 +4,12 @@
 //
 //  Created by VC on 30/07/26.
 //
+
+
+
+
+
+
 import SwiftUI
 import CoreData
 
@@ -11,8 +17,11 @@ struct DateWiseTransactionView: View {
 
     let selectedDate: Date
     @State private var records: [ExpenseIncomeRecord] = []
-//    @State private var expenses: [Expenses] = []
+
     @State private var incomes: [Income] = []
+    
+    
+
     func loadRecords() {
 
         let expenses = CoreDataManager.shared.fetchExpenses(for: selectedDate)
