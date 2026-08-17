@@ -57,12 +57,6 @@ Users can add income and expense records with the required transaction details.
 ### Load More Dates
 Users can browse transactions based on a selected date range.
 
-## Future Improvements
-
-- Account side menu
-- User profile management
-- Logout functionality
-- Additional UI improvements
 
 ## Developer
 
